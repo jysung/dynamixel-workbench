@@ -214,6 +214,55 @@ bool DynamixelDriver::readRegister(std::string addr_name, int32_t *value)
   }
 }
 
+bool DynamixelDriver::readAllRegister(int last_address, uint8_t *value_array)
+{
+  uint8_t error = 0;
+  int comm_result = COMM_RX_FAIL;
+
+  // read all reigsters starting from 0
+  comm_result = packetHandler_->readTxRx(portHandler_, dynamixel_->id_, 0, last_address, value_array, &error);
+  
+  if (comm_result == COMM_SUCCESS)
+  {
+    if (error != 0)
+    {
+      packetHandler_->printRxPacketError(error);
+    }
+
+    return true;
+  }
+  else
+  {
+    packetHandler_->printTxRxResult(comm_result);
+
+    ROS_ERROR("[ID] %u, Fail to read all registers!", dynamixel_->id_);
+    return false;
+  }
+
+}
+
+bool DynamixelDriver::lookupLoadedRegisterValue(uint8_t *read_register_array, std::string addr_name, int32_t *value)
+{
+  dynamixel_->item_ = dynamixel_->ctrl_table_[addr_name];
+  dynamixel_tool::ControlTableItem *addr_item = dynamixel_->item_;
+
+  if (addr_item->data_length == 1)
+  {
+    *value = read_register_array[addr_item->address];
+  }
+  else if (addr_item->data_length == 2)
+  {
+    *value = DXL_MAKEWORD(read_register_array[addr_item->address], read_register_array[addr_item->address + 1]);
+  }
+  else if (addr_item->data_length == 4)
+  {
+    *value = DXL_MAKEDWORD(DXL_MAKEWORD(read_register_array[addr_item->address], read_register_array[addr_item->address + 1]),
+                           DXL_MAKEWORD(read_register_array[addr_item->address + 2], read_register_array[addr_item->address + 3]));
+  }
+
+  return true;
+}
+
 bool DynamixelDriver::reboot()
 {
   if (getProtocolVersion() != 2.0)
