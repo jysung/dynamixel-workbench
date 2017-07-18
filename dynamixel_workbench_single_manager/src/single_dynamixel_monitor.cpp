@@ -1020,7 +1020,7 @@ bool SingleDynamixelMonitor::XM()
   uint8_t read_value_array[200] = {0};
 
   // read all registers (upto "Present Temperature")
-  dynamixel_driver_->readAllRegister(147, read_value_array);
+  dynamixel_driver_->cacheAllRegister(147, read_value_array);
 
   dynamixel_workbench_msgs::XM xm_state;
   dynamixel_tool::DynamixelTool *dynamixel = dynamixel_driver_->dynamixel_;
@@ -1033,7 +1033,7 @@ bool SingleDynamixelMonitor::XM()
     dynamixel->item_ = dynamixel->ctrl_table_[dynamixel->it_ctrl_->first.c_str()];
 
     // lookup each value of register
-    dynamixel_driver_->lookupLoadedRegisterValue(read_value_array, dynamixel->item_->item_name, &read_value);
+    dynamixel_driver_->lookupCachedRegisterValue(read_value_array, dynamixel->item_->item_name, &read_value);
 
     if ("model_number" == dynamixel->item_->item_name)
       xm_state.model_number = read_value;

@@ -71,8 +71,8 @@ class DynamixelDriver
   bool writeRegister(std::string addr_name, uint32_t value);
   bool readRegister(std::string addr_name, int32_t *value);
 
-  bool readAllRegister(int last_address, uint8_t *value_array);
-  bool lookupLoadedRegisterValue(uint8_t *read_register_array, std::string addr_name, int32_t *value);
+  bool cacheAllRegister(int last_address, uint8_t *value_array);
+  bool lookupCachedRegisterValue(uint8_t *read_register_array, std::string addr_name, int32_t *value);
 };
 }
 

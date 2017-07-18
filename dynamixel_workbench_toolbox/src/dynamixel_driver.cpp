@@ -214,7 +214,7 @@ bool DynamixelDriver::readRegister(std::string addr_name, int32_t *value)
   }
 }
 
-bool DynamixelDriver::readAllRegister(int last_address, uint8_t *value_array)
+bool DynamixelDriver::cacheAllRegister(int last_address, uint8_t *value_array)
 {
   uint8_t error = 0;
   int comm_result = COMM_RX_FAIL;
@@ -241,7 +241,7 @@ bool DynamixelDriver::readAllRegister(int last_address, uint8_t *value_array)
 
 }
 
-bool DynamixelDriver::lookupLoadedRegisterValue(uint8_t *read_register_array, std::string addr_name, int32_t *value)
+bool DynamixelDriver::lookupCachedRegisterValue(uint8_t *read_register_array, std::string addr_name, int32_t *value)
 {
   dynamixel_->item_ = dynamixel_->ctrl_table_[addr_name];
   dynamixel_tool::ControlTableItem *addr_item = dynamixel_->item_;
