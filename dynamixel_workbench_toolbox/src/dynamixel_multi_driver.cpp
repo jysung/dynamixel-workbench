@@ -143,10 +143,11 @@ bool DynamixelMultiDriver::cacheAllRegistersMulti(int last_address)
   for (std::vector<dynamixel_tool::DynamixelTool *>::size_type num = 0; num < multi_dynamixel_.size(); ++num)
   {
     dynamixel_= multi_dynamixel_[num];
-    uint8_t *value_array = new uint8_t[last_address];
-
-    comm_result = packetHandler_->readTxRx(portHandler_, dynamixel_->id_, 0, last_address, value_array, &error);
-    cached_register_[dynamixel_->id_] = value_array;
+    if (cached_register_.find(dynamixel_->id_) == cached_register_.end()) {
+       uint8_t *value_array = new uint8_t[last_address];
+       cached_register_[dynamixel_->id_] = value_array;
+    } 
+    comm_result = packetHandler_->readTxRx(portHandler_, dynamixel_->id_, 0, last_address, cached_register_[dynamixel_->id_], &error);
   }
 
   if (comm_result == COMM_SUCCESS)
