@@ -1016,17 +1016,24 @@ bool SingleDynamixelMonitor::XL()
 
 bool SingleDynamixelMonitor::XM()
 {
-  int32_t read_value = 0;
+
+  uint8_t read_value_array[200] = {0};
+
+  // read all registers (upto "Present Temperature")
+  dynamixel_driver_->cacheAllRegister(147, read_value_array);
 
   dynamixel_workbench_msgs::XM xm_state;
   dynamixel_tool::DynamixelTool *dynamixel = dynamixel_driver_->dynamixel_;
 
+  int32_t read_value = 0;
   for (dynamixel->it_ctrl_ = dynamixel->ctrl_table_.begin();
        dynamixel->it_ctrl_ != dynamixel->ctrl_table_.end();
        dynamixel->it_ctrl_++)
   {
     dynamixel->item_ = dynamixel->ctrl_table_[dynamixel->it_ctrl_->first.c_str()];
-    dynamixel_driver_->readRegister(dynamixel->item_->item_name ,&read_value);
+
+    // lookup each value of register
+    dynamixel_driver_->lookupCachedRegisterValue(read_value_array, dynamixel->item_->item_name, &read_value);
 
     if ("model_number" == dynamixel->item_->item_name)
       xm_state.model_number = read_value;
@@ -1130,10 +1137,11 @@ bool SingleDynamixelMonitor::XM()
       xm_state.present_input_voltage = read_value;
     else if ("present_temperature" == dynamixel->item_->item_name)
       xm_state.present_temperature = read_value;
-  }
 
+  }
   dynamixel_status_pub_.publish(xm_state);
 }
+
 
 bool SingleDynamixelMonitor::XH()
 {

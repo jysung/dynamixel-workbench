@@ -133,6 +133,64 @@ bool DynamixelMultiDriver::readMultiRegister(std::string addr_name)
   return true;
 }
 
+// Load all reigsters of every motor and store to cached_register_
+bool DynamixelMultiDriver::cacheAllRegistersMulti(int last_address)
+{
+  uint8_t error = 0;
+  int comm_result = COMM_RX_FAIL;
+
+  // read all reigsters starting from 0
+  for (std::vector<dynamixel_tool::DynamixelTool *>::size_type num = 0; num < multi_dynamixel_.size(); ++num)
+  {
+    dynamixel_= multi_dynamixel_[num];
+    if (cached_register_.find(dynamixel_->id_) == cached_register_.end()) {
+       uint8_t *value_array = new uint8_t[last_address];
+       cached_register_[dynamixel_->id_] = value_array;
+    } 
+    comm_result = packetHandler_->readTxRx(portHandler_, dynamixel_->id_, 0, last_address, cached_register_[dynamixel_->id_], &error);
+  }
+
+  if (comm_result == COMM_SUCCESS)
+  {
+    if (error != 0)
+    {
+      packetHandler_->printRxPacketError(error);
+    }
+
+    return true;
+  }
+  else
+  {
+    packetHandler_->printTxRxResult(comm_result);
+
+    ROS_ERROR("[ID] %u, Fail to read all registers!", dynamixel_->id_);
+    return false;
+  }
+
+}
+
+// look up cached register values and save it to read_value_ map
+bool DynamixelMultiDriver::lookupCachedRegisterValueMulti(std::string addr_name)
+{
+  std::vector<int64_t> *read_data = new std::vector<int64_t>;
+
+  for (std::vector<dynamixel_tool::DynamixelTool *>::size_type num = 0; num < multi_dynamixel_.size(); ++num)
+  {
+    int32_t value;
+    dynamixel_= multi_dynamixel_[num];
+
+    if (lookupCachedRegisterValue(cached_register_[dynamixel_->id_], addr_name, &value))
+      read_data->push_back(value);
+    else
+      return false;
+  }
+
+  read_value_[addr_name] = read_data;
+
+  return true;
+}
+
+
 bool DynamixelMultiDriver::syncWritePosition(std::vector<uint32_t> pos)
 {
   bool dynamixel_addparam_result_;

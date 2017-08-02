@@ -29,6 +29,9 @@ class DynamixelMultiDriver : public dynamixel_driver::DynamixelDriver
   std::map<std::string, std::vector<int64_t> *> read_value_;
 
  private:
+  // cache ID -> whole register as array
+  std::map<int, uint8_t * > cached_register_;
+
   dynamixel::PortHandler   *portHandler_;
   dynamixel::PacketHandler *packetHandler_;
 
@@ -53,6 +56,9 @@ class DynamixelMultiDriver : public dynamixel_driver::DynamixelDriver
   dynamixel::GroupSyncRead*  setSyncRead(std::string addr_name);
 
   bool readMultiRegister(std::string addr_name);
+
+  bool cacheAllRegistersMulti(int last_address);
+  bool lookupCachedRegisterValueMulti(std::string addr_name);
 
   bool syncWriteTorque(std::vector<uint8_t> &onoff);
   bool syncWritePosition(std::vector<uint32_t> pos);
